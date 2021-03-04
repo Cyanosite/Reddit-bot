@@ -56,8 +56,9 @@ while True:
         if int(time_atm[3][0:2]) == 23 and int(time_atm[3][3:5]) == 59:
             with open(f'{time_atm[1]}_{time_atm[2]}.txt', 'a') as document:
                 document.write(f'{time_atm[1]} {time_atm[2]} summary:\n')
-                for key, value in collection:
+                for key, value in collection.items():
                     document.write(f'{key} - {stocks[key]}: {value}\n')
             collection = {}
+            time.sleep(200)
         time.sleep(45)
     time.sleep(5)
