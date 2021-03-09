@@ -1,0 +1,27 @@
+Tue Mar  9 15:04:02 2021
+NNDM - 1
+RKT - 1
+M - 1
+K - 1
+BB - 2
+GME - 13
+Tue Mar  9 15:06:05 2021
+GME - 13
+CYCC - 1
+NEXT - 1
+NNDM - 1
+BB - 1
+RKT - 1
+M - 1
+K - 1
+Tue Mar  9 15:08:03 2021
+Tue Mar  9 15:15:03 2021
+GME - 12
+WOOD - 1
+ALL - 1
+IT - 1
+FOR - 1
+NNDM - 1
+BB - 1
+RKT - 1
+M - 1
