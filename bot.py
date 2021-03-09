@@ -29,7 +29,7 @@ while True:
     if 0 < int(time_atm[3][6:8]) < 10:
         tickers = {}
         # GET last 100 posts from r/wallstreetbets while sort = new
-        r = requests.get('http://www.reddit.com/r/wallstreetbets/new.json?limit=100')
+        r = requests.get('http://www.reddit.com/r/wallstreetbets/new.json?limit=100', headers={'User-agent': 'Ticker stats'})
         # put data into json
         data = r.json()
         for item in data['data']['children']:
