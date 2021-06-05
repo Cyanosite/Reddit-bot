@@ -76,7 +76,7 @@ while True:
                 else:
                     summary[k] += v
             # sorting summary by their value descending
-            summary = {k: v for k, v in sorted(tickers.items(), key=lambda item: item[1], reverse=True)}
+            summary = {k: v for k, v in sorted(summary.items(), key=lambda item: item[1], reverse=True)}
 
             with open(f'{time_atm[1]}_{time_atm[2]}.txt', 'a') as document:
                 document.write(f'{time_atm[1:]} summary:\n')
