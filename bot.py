@@ -1,13 +1,13 @@
 import yfinance as yf
 import requests
 import time
-# stores all the link from last request
+# stores all the links from last request
 lastlink = []
 # initial ticker names from the txts
 stocks = {}
-# daily summary, updates value every 15 minutes
-collection = {}
-# 15 min summary, updates value every minute
+# used to collect new information, and to display the hourly change
+tickers = {}
+# total mentions
 summary = {}
 
 # importing ticker names from the files. ('ticker\tcompany')
@@ -28,7 +28,6 @@ while True:
     time_atm = time.asctime(time.localtime()).split()
     # if seconds are between 0 and 10
     if 0 < int(time_atm[3][6:8]) < 10:
-        tickers = {}
         # GET last 100 posts from r/wallstreetbets while sort = new
         r = requests.get('http://www.reddit.com/r/wallstreetbets/new.json?limit=100', headers={'User-agent': 'Ticker stats'})
         # put data into json
@@ -68,49 +67,33 @@ while True:
         for item in data['data']['children']:
             lastlink.append(item['data']['permalink'])
 
-        # adding our tickers to the summary, which is important for recording all the new tickers in the last 15 minutes
-        for key, value in tickers.items():
-            if key in summary:
-                summary[key] += value
-            else:
-                summary[key] = value
-
-        # every 15 minutes
-        if int(time_atm[3][3:5]) % 15 == 0:
-            # open a txt with today's date
-            with open(f'{time_atm[1]}_{time_atm[2]}.txt', 'a') as document:
-                # sorting summaries by their value descending
-                summary = {k: v for k, v in sorted(summary.items(), key=lambda item: item[1], reverse=True)}
-                document.write(f'{time.asctime(time.localtime())}\n')
-                for i in summary:
-                    document.write(f'{i} - {summary[i]}\n')
-            # adding our summary to the collection, important for daily summary
-            for key, value in summary.items():
-                if key in collection:
-                    collection[key] += value
+        # every hour
+        if int(time_atm[3][3:5]) == 59:
+            # putting tickers into summary, as tickers will be used to display the hourly change
+            for k, v in tickers.items():
+                if k not in summary:
+                    summary[k] = v
                 else:
-                    collection[key] = value
-            summary = {}
+                    summary[k] += v
+            # sorting summary by their value descending
+            summary = {k: v for k, v in sorted(tickers.items(), key=lambda item: item[1], reverse=True)}
 
-        # at 23:59 every day (last run of the day), same procedure with summary
-        if int(time_atm[3][0:2]) == 23 and int(time_atm[3][3:5]) == 59:
             with open(f'{time_atm[1]}_{time_atm[2]}.txt', 'a') as document:
-                # sorting collections by their value descending
-                collection = {k: v for k, v in sorted(collection.items(), key=lambda item: item[1], reverse=True)}
-                document.write(f'{time_atm[1]} {time_atm[2]} summary:\n')
-                # Detailing every company present in our collection dictionary
-                for i in collection:
-                    # ticker - company name - number of mentions
-                    document.write(f'{i} - {stocks[i]} - {collection[i]}:\n')
-                    # getting the current day's data from the yfinance module
-                    info = yf.Ticker(i).history(period='1d')
-                    # opening price; closing price
-                    document.write(f"opening: {round(info['Open'][0],2)}; closing: {round(info['Close'][0],2)}; ")
-                    # calculating the stock price change from opening to closing in % rounded to 2 decimals
-                    change = round(((info['Close'][0]/info['Open'][0])-1)*100,2)
-                    # change%; highest price during the day; lowest price during the day
-                    document.write(f"change: {change}%; high: {round(info['High'][0],2)}; low: {round(info['Low'][0],2)}\n")
-            collection = {}
+                document.write(f'{time_atm[1:]} summary:\n')
+                # Detailing every company present in our tickers dictionary
+                for i in summary:
+                    if summary[i] > 3:
+                        # ticker - company name - number of mentions - change in the last hour
+                        document.write(f'{i} - {stocks[i]} - {summary[i]} - +{tickers[i]}:\n')
+                        # getting the current day's data from the yfinance module
+                        info = yf.Ticker(i).history(period='1d')
+                        # opening price; closing price
+                        document.write(f"opening: {round(info['Open'][0],2)}; current/closing: {round(info['Close'][0],2)}; ")
+                        # calculating the stock price change from opening to closing in % rounded to 2 decimals
+                        change = round(((info['Close'][0]/info['Open'][0])-1)*100,2)
+                        # change%; highest price during the day; lowest price during the day
+                        document.write(f"change: {change}%; high: {round(info['High'][0],2)}; low: {round(info['Low'][0],2)}\n")
+                document.write("\n\n\n")
         # sleep for more than 10 so it won't run again in the same minute
         time.sleep(45)
     # sleep 5 seconds, so it will always land in the 0 < time < 10 interval, so it'll run every minute
